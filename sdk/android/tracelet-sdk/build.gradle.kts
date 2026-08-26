@@ -134,7 +134,7 @@ afterEvaluate {
         publications {
             create<MavenPublication>("release") {
                 from(components["release"])
-                groupId = "com.ikolvi"
+                groupId = "com.mattyg.tracelet"
                 artifactId = "tracelet-sdk"
                 version = project.version.toString()
 
@@ -166,6 +166,17 @@ afterEvaluate {
                         connection.set("scm:git:git://github.com/Ikolvi/Tracelet.git")
                         developerConnection.set("scm:git:ssh://github.com/Ikolvi/Tracelet.git")
                     }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/mattyg/Tracelet")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR") ?: "mattyg"
+                    password = System.getenv("GITHUB_TOKEN")
                 }
             }
         }

@@ -7,6 +7,13 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/mattyg/Tracelet")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 
@@ -48,7 +55,7 @@ android {
         // Tracelet SDK — standalone geolocation engine
         // Resolved from Maven Central when published, substituted with local
         // module via includeBuild during development.
-        api("com.ikolvi:tracelet-sdk:3.8.7")
+        api("com.mattyg.tracelet:tracelet-sdk:3.8.7-pika.1")
 
         // Version floor for Play Services Location (see issue #263).
         //
