@@ -3,6 +3,9 @@ import com.ikolvi.tracelet.sdk.util.TraceletLog
 
 import android.Manifest
 import android.content.Context
+import android.content.BroadcastReceiver
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
@@ -113,6 +116,12 @@ class LocationEngine(
         TraceletServices.getProvider(context).getLocationClient(context)
 
     private var trackingCallback: TraceletLocationCallback? = null
+    private var providerStateReceiver: BroadcastReceiver? = null
+    private var lastProviderState: Map<String, Any?>? = null
+
+    init {
+        registerProviderStateReceiver()
+    }
 
     /** Cancellation source for the in-flight stationary→moving one-shot fix.
      *  Cancelled on `stop()` and superseded on each new transition so that
@@ -1276,9 +1285,50 @@ class LocationEngine(
         )
     }
 
+    private fun registerProviderStateReceiver() {
+        if (providerStateReceiver != null) return
+        lastProviderState = buildProviderState()
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    LocationManager.MODE_CHANGED_ACTION,
+                    LocationManager.PROVIDERS_CHANGED_ACTION -> publishProviderStateIfChanged()
+                }
+            }
+        }
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            IntentFilter().apply {
+                addAction(LocationManager.MODE_CHANGED_ACTION)
+                addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
+            },
+            ContextCompat.RECEIVER_EXPORTED,
+        )
+        providerStateReceiver = receiver
+    }
+
+    private fun publishProviderStateIfChanged() {
+        val providerState = buildProviderState()
+        if (providerState == lastProviderState) return
+        lastProviderState = providerState
+        events.sendProviderChange(providerState)
+    }
+
+    private fun unregisterProviderStateReceiver() {
+        val receiver = providerStateReceiver ?: return
+        providerStateReceiver = null
+        try {
+            context.unregisterReceiver(receiver)
+        } catch (_: IllegalArgumentException) {
+            // Already unregistered by Android teardown.
+        }
+    }
+
     /** Destroys resources. */
     fun destroy() {
         stop()
+        unregisterProviderStateReceiver()
         stopAllWatchers()
         locationProcessor?.destroy()
         locationProcessor = null
