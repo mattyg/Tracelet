@@ -55,7 +55,7 @@ android {
         // Tracelet SDK — standalone geolocation engine
         // Resolved from Maven Central when published, substituted with local
         // module via includeBuild during development.
-        api("com.mattyg.tracelet:tracelet-sdk:3.8.7-pika.1")
+        api("com.mattyg.tracelet:tracelet-sdk:3.8.7-pika.2")
 
         // Version floor for Play Services Location (see issue #263).
         //
