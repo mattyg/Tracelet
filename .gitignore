@@ -156,7 +156,7 @@ sdk/rust-core/target
 sdk/rust-core/out/
 *.zip
 
-packages/tracelet_platform_interface/lib/src/rust/
+# Fork distribution commits Dart FRB bindings so Git dependencies are complete.
 
 # Benchmark generated files
 benchmark/benchmark_results.json
