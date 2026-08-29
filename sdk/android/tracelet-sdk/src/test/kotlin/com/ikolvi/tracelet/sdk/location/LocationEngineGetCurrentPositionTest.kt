@@ -275,6 +275,27 @@ class LocationEngineGetCurrentPositionTest {
     }
 
     @Test
+    fun `coarse-only authorization marks one-shot result reduced`() {
+        val shadowApp = shadowOf(context)
+        shadowApp.denyPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
+        shadowApp.grantPermissions(Manifest.permission.ACCESS_COARSE_LOCATION)
+        lateinit var updateCallback: TraceletLocationCallback
+        doAnswer { invocation ->
+            updateCallback = invocation.getArgument(1)
+            null
+        }.`when`(mockLocationClient).requestLocationUpdates(any(), any(), any())
+
+        var result: Map<String, Any?>? = null
+        engine.getCurrentPosition(
+            mapOf("samples" to 1, "persist" to false),
+        ) { result = it }
+        updateCallback.onLocationResult(listOf(location(accuracy = 1500f)))
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(true, result?.get("reducedAccuracy"))
+    }
+
+    @Test
     fun `coarse cached fix remains candidate until accuracy target`() {
         lateinit var updateCallback: TraceletLocationCallback
         doAnswer { invocation ->

@@ -1381,8 +1381,7 @@ class LocationEngine(
     /** Returns provider state info. */
     fun buildProviderState(): Map<String, Any?> {
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-        val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED
+        val hasFine = hasFineLocationPermission()
         val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
         val hasBackground = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
@@ -1403,6 +1402,12 @@ class LocationEngine(
             "platform" to "android",
         )
     }
+
+    private fun hasFineLocationPermission(): Boolean =
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+        ) == PackageManager.PERMISSION_GRANTED
 
     /** Destroys resources. */
     fun destroy() {
@@ -1839,7 +1844,7 @@ class LocationEngine(
             "odometer" to state.odometer,
             "event" to event,
             "locationSource" to locationSource,
-            "reducedAccuracy" to false,  // Android has no reduced-accuracy concept like iOS 14+
+            "reducedAccuracy" to !hasFineLocationPermission(),
             "mock" to mock,
             "mockHeuristics" to mockHeuristics,
             "coords" to mapOf(
