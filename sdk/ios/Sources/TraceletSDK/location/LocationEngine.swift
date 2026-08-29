@@ -861,6 +861,10 @@ public final class LocationEngine: NSObject, CLLocationManagerDelegate {
             periodicFixBgTaskId = BackgroundTaskHelper.shared.begin("periodicFix")
             collectSamples(
                 count: Self.periodicHighAccuracySampleCount,
+                accuracyTarget: nil,
+                requestId: nil,
+                initialCandidates: [],
+                timeoutSeconds: configManager.getLocationTimeout(),
                 persist: true,
                 extras: [:]
             ) { [weak self] _ in
@@ -1189,8 +1193,13 @@ public final class LocationEngine: NSObject, CLLocationManagerDelegate {
         let maximumAge = (options["maximumAge"] as? NSNumber)?.int64Value ?? 0
         let samples = max((options["samples"] as? NSNumber)?.intValue ?? 1, 1)
         let timeout = max((options["timeout"] as? NSNumber)?.intValue ?? 30, 0)
-        let accuracyTarget = (options["accuracyTarget"] as? NSNumber)?.doubleValue
-            .flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
+        let rawAccuracyTarget = (options["accuracyTarget"] as? NSNumber)?.doubleValue
+        let accuracyTarget: Double?
+        if let target = rawAccuracyTarget, target.isFinite, target >= 0 {
+            accuracyTarget = target
+        } else {
+            accuracyTarget = nil
+        }
         let requestId = options["requestId"] as? String
         let extras = options["extras"] as? [String: Any] ?? [:]
 
