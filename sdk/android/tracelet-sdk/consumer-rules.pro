@@ -21,6 +21,11 @@
 -keep class com.ikolvi.tracelet.sdk.service.LocationService { *; }
 -keep class com.ikolvi.tracelet.sdk.receiver.** { *; }
 
+# Host notification providers are named in service metadata and constructed reflectively.
+-keep class * implements com.ikolvi.tracelet.sdk.notification.ForegroundNotificationProvider {
+    public <init>();
+}
+
 # SQLCipher (optional — only applied if present on classpath)
 -dontwarn net.zetetic.database.**
 -keep class net.zetetic.database.** { *; }

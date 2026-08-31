@@ -418,6 +418,53 @@ sdk.ready(TraceletConfig(
 )) { state -> sdk.start() }
 ```
 
+### Custom native notification
+
+Hosts that need a branded notification, custom `RemoteViews`, or native action
+controls can provide the complete notification while leaving publication and
+foreground-service ownership with Tracelet.
+
+Implement `ForegroundNotificationProvider` with a public zero-argument
+constructor:
+
+```kotlin
+class RecordingNotificationProvider : ForegroundNotificationProvider {
+    override fun createNotification(
+        context: Context,
+        fallback: Notification,
+    ): Notification? {
+        val presentation = loadPersistedPresentation(context) ?: return null
+        return buildRecordingNotification(context, presentation)
+    }
+}
+```
+
+Register it as metadata on Tracelet's merged service declaration:
+
+```xml
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <service
+            android:name="com.ikolvi.tracelet.sdk.service.LocationService"
+            tools:node="merge">
+            <meta-data
+                android:name="com.ikolvi.tracelet.FOREGROUND_NOTIFICATION_PROVIDER"
+                android:value="com.example.RecordingNotificationProvider" />
+        </service>
+    </application>
+</manifest>
+```
+
+Tracelet constructs the provider when `LocationService` starts and invokes it
+for the initial `startForeground` notification and every later rebuild. Return
+`null` to use Tracelet's configured standard notification. Providers run
+synchronously during service lifecycle work and must use Android-owned local
+state; they must not require a Flutter engine, network request, or asynchronous
+initialization. Tracelet remains the only publisher of its foreground
+notification ID.
+
 ### Without Notification
 
 ```kotlin

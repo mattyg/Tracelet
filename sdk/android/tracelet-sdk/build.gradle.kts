@@ -170,6 +170,20 @@ afterEvaluate {
             }
         }
 
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/mattyg/Tracelet")
+                credentials {
+                    username = findProperty("gpr.user") as String?
+                        ?: System.getenv("GITHUB_ACTOR")
+                        ?: "mattyg"
+                    password = findProperty("gpr.key") as String?
+                        ?: System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+
         // Use vanniktech for actual upload to Central Portal
         // Run: ./gradlew publishAndReleaseToMavenCentral
     }

@@ -27,6 +27,8 @@ import com.ikolvi.tracelet.sdk.TraceletEventSender
 import com.ikolvi.tracelet.sdk.StateManager
 import com.ikolvi.tracelet.sdk.geofence.GeofenceManager
 import com.ikolvi.tracelet.sdk.location.LocationEngine
+import com.ikolvi.tracelet.sdk.notification.ForegroundNotificationProvider
+import com.ikolvi.tracelet.sdk.notification.ForegroundNotificationProviderLoader
 import com.ikolvi.tracelet.sdk.location.PeriodicLocationWorker
 import com.ikolvi.tracelet.sdk.receiver.GeofenceBroadcastReceiver
 import com.ikolvi.tracelet.sdk.model.TrackingMode
@@ -667,6 +669,7 @@ class LocationService : Service(), DefaultLifecycleObserver {
 
     // Populated from ConfigManager at start time
     private lateinit var configManager: ConfigManager
+    private var notificationProvider: ForegroundNotificationProvider? = null
 
     private var isForegroundService = false
     private var lastInForeground: Boolean? = null
@@ -693,6 +696,7 @@ class LocationService : Service(), DefaultLifecycleObserver {
     override fun onCreate() {
         super<Service>.onCreate()
         configManager = ConfigManager.getInstance(applicationContext)
+        notificationProvider = ForegroundNotificationProviderLoader.load(applicationContext)
 
         // #318: wire the persistent logger before anything else runs here.
         // Touching `.logger` is what calls TraceletLog.attach(), and on a cold
@@ -1869,6 +1873,11 @@ class LocationService : Service(), DefaultLifecycleObserver {
     }
 
     private fun buildNotification(): Notification {
+        val fallback = buildStandardNotification()
+        return notificationProvider?.createNotification(applicationContext, fallback) ?: fallback
+    }
+
+    private fun buildStandardNotification(): Notification {
         val channelId = configManager.getFgChannelId()
         val title = configManager.getFgNotificationTitle()
         val text = configManager.getFgNotificationText()
