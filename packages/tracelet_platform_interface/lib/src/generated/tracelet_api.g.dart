@@ -3955,7 +3955,7 @@ class TraceletHostApi {
     return pigeonVar_replyValue! as TlState;
   }
 
-  Future<TlState> stop() async {
+  Future<TlState> stop(bool preserveForegroundService) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.tracelet_platform_interface.TraceletHostApi.stop$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -3963,7 +3963,8 @@ class TraceletHostApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[preserveForegroundService]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(

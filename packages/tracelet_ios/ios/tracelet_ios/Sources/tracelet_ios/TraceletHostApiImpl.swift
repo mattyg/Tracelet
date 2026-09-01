@@ -412,7 +412,10 @@ class TraceletHostApiImpl: TraceletHostApi {
         completion(.success(dictToTlState(state as? [String: Any] ?? [:])))
     }
 
-    func stop(completion: @escaping (Result<TlState, Error>) -> Void) {
+    func stop(
+        preserveForegroundService _: Bool,
+        completion: @escaping (Result<TlState, Error>) -> Void
+    ) {
         // No isReadyState guard — stop() must work before ready() so the user
         // can halt tracking that was auto-resumed after a killed-state relaunch.
         // The SDK is initialize()d at plugin registration, so this is safe.

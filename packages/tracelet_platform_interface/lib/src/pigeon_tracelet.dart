@@ -133,8 +133,10 @@ class PigeonTracelet extends TraceletPlatform {
   }
 
   @override
-  Future<Map<String, Object?>> stop() async {
-    return _stateToMap(await _api.stop());
+  Future<Map<String, Object?>> stop({
+    bool preserveForegroundService = false,
+  }) async {
+    return _stateToMap(await _api.stop(preserveForegroundService));
   }
 
   @override

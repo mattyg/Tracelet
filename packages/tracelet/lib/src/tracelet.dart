@@ -333,10 +333,14 @@ class Tracelet {
 
   /// Stop location tracking.
   ///
-  /// Returns the updated [State] after stopping.
-  static Future<State> stop() async {
+  /// [preserveForegroundService] keeps Android's existing foreground service
+  /// alive so a host notification provider can publish a paused presentation.
+  /// Other platforms ignore it. Returns the updated [State] after stopping.
+  static Future<State> stop({bool preserveForegroundService = false}) async {
     await _ensureRustLibInitialized();
-    final result = await _platform.stop();
+    final result = await _platform.stop(
+      preserveForegroundService: preserveForegroundService,
+    );
 
     // Stop trip detection and reset.
     _stopTripDetection();

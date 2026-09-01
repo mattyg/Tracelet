@@ -431,9 +431,9 @@ class TraceletHostApiImpl(
         } catch (e: Exception) { callback(Result.failure(e)) }
     }
 
-    override fun stop(callback: (Result<TlState>) -> Unit) {
+    override fun stop(preserveForegroundService: Boolean, callback: (Result<TlState>) -> Unit) {
         try {
-            sdk.stop()
+            sdk.stop(preserveForegroundService = preserveForegroundService)
             callback(Result.success(mapToTlState(sdk.getState())))
         } catch (e: Exception) { callback(Result.failure(e)) }
     }

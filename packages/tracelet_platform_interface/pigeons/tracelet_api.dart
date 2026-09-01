@@ -900,7 +900,7 @@ abstract class TraceletHostApi {
   TlState start();
 
   @async
-  TlState stop();
+  TlState stop(bool preserveForegroundService);
 
   @async
   TlState startGeofences();

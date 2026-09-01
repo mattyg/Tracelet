@@ -52,7 +52,9 @@ abstract class TraceletPlatform extends PlatformInterface {
   }
 
   /// Stop location tracking. Returns [State] map.
-  Future<Map<String, Object?>> stop() {
+  Future<Map<String, Object?>> stop({
+    bool preserveForegroundService = false,
+  }) {
     throw UnimplementedError('stop() has not been implemented.');
   }
 

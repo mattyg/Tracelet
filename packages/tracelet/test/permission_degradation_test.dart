@@ -240,7 +240,9 @@ class MockPermissionPlatform extends TraceletPlatform
   }
 
   @override
-  Future<Map<String, Object?>> stop() async {
+  Future<Map<String, Object?>> stop({
+    bool preserveForegroundService = false,
+  }) async {
     calls.add((method: 'stop', args: null));
     stateResult['enabled'] = false;
     return Map<String, Object?>.from(stateResult);

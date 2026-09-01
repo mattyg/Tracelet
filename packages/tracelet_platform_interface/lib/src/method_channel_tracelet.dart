@@ -47,8 +47,12 @@ class MethodChannelTracelet extends TraceletPlatform {
   }
 
   @override
-  Future<Map<String, Object?>> stop() async {
-    return _invokeMap('stop');
+  Future<Map<String, Object?>> stop({
+    bool preserveForegroundService = false,
+  }) async {
+    return _invokeMap('stop', {
+      'preserveForegroundService': preserveForegroundService,
+    });
   }
 
   @override

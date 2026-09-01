@@ -3633,7 +3633,7 @@ interface TraceletHostApi {
   fun requestStateFlush()
   fun ready(config: TlConfig, callback: (Result<TlState>) -> Unit)
   fun start(callback: (Result<TlState>) -> Unit)
-  fun stop(callback: (Result<TlState>) -> Unit)
+  fun stop(preserveForegroundService: Boolean, callback: (Result<TlState>) -> Unit)
   fun startGeofences(callback: (Result<TlState>) -> Unit)
   fun startPeriodic(callback: (Result<TlState>) -> Unit)
   fun getState(callback: (Result<TlState>) -> Unit)
@@ -3824,8 +3824,10 @@ interface TraceletHostApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.tracelet_platform_interface.TraceletHostApi.stop$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            api.stop{ result: Result<TlState> ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val preserveForegroundServiceArg = args[0] as Boolean
+            api.stop(preserveForegroundServiceArg) { result: Result<TlState> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(TraceletApiPigeonUtils.wrapError(error))

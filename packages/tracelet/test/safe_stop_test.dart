@@ -36,8 +36,10 @@ class MockSafeStopPlatform extends TraceletPlatform
   }
 
   @override
-  Future<Map<String, Object?>> stop() async {
-    calls.add((method: 'stop', args: null));
+  Future<Map<String, Object?>> stop({
+    bool preserveForegroundService = false,
+  }) async {
+    calls.add((method: 'stop', args: preserveForegroundService));
     stateResult['enabled'] = false;
     return Map<String, Object?>.from(stateResult);
   }
@@ -150,6 +152,12 @@ void main() {
       expect(state.enabled, isFalse);
       expect(mock.calls.length, 1);
       expect(mock.calls.first.method, 'stop');
+    });
+
+    test('stop forwards foreground service preservation', () async {
+      await Tracelet.stop(preserveForegroundService: true);
+
+      expect(mock.calls.single, (method: 'stop', args: true));
     });
 
     test('full user pattern: getState → stop → ready', () async {

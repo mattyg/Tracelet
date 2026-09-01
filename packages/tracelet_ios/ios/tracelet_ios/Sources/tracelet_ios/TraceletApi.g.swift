@@ -3438,7 +3438,7 @@ protocol TraceletHostApi {
   func requestStateFlush() throws
   func ready(config: TlConfig, completion: @escaping (Result<TlState, Error>) -> Void)
   func start(completion: @escaping (Result<TlState, Error>) -> Void)
-  func stop(completion: @escaping (Result<TlState, Error>) -> Void)
+  func stop(preserveForegroundService: Bool, completion: @escaping (Result<TlState, Error>) -> Void)
   func startGeofences(completion: @escaping (Result<TlState, Error>) -> Void)
   func startPeriodic(completion: @escaping (Result<TlState, Error>) -> Void)
   func getState(completion: @escaping (Result<TlState, Error>) -> Void)
@@ -3609,8 +3609,10 @@ class TraceletHostApiSetup {
     }
     let stopChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.tracelet_platform_interface.TraceletHostApi.stop\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      stopChannel.setMessageHandler { _, reply in
-        api.stop { result in
+      stopChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let preserveForegroundServiceArg = args[0] as! Bool
+        api.stop(preserveForegroundService: preserveForegroundServiceArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))

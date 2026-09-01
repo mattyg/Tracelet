@@ -235,7 +235,9 @@ class TraceletWebPlugin extends TraceletPlatform {
   }
 
   @override
-  Future<Map<String, Object?>> stop() async {
+  Future<Map<String, Object?>> stop({
+    bool preserveForegroundService = false,
+  }) async {
     _enabled = false;
     _locationEngine.stopTracking();
     _events.emitEnabledChange(false);
