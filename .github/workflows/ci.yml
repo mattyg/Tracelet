@@ -24,7 +24,7 @@ env:
 jobs:
   analyze:
     name: Analyze & Format
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
@@ -80,7 +80,7 @@ jobs:
 
   test-rust:
     name: Tests (rust-core)
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - name: Setup Rust
@@ -93,7 +93,7 @@ jobs:
 
   test:
     name: Tests (${{ matrix.package }})
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04
     needs: analyze
     strategy:
       fail-fast: false
@@ -162,7 +162,7 @@ jobs:
 
   build-android:
     name: Build Android
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04
     needs: analyze
     steps:
       - uses: actions/checkout@v7
@@ -255,7 +255,7 @@ jobs:
 
   build-ios:
     name: Build iOS
-    runs-on: macos-latest
+    runs-on: depot-macos-latest
     needs: analyze
     steps:
       - uses: actions/checkout@v7
@@ -389,7 +389,7 @@ jobs:
 
   build-web:
     name: Build Web
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04
     needs: analyze
     steps:
       - uses: actions/checkout@v7
@@ -430,7 +430,7 @@ jobs:
 
   coverage:
     name: Coverage Report
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04
     needs: test
     steps:
       - uses: actions/checkout@v7
@@ -477,7 +477,7 @@ jobs:
 
   validate:
     name: Validate Monorepo
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04
     needs: analyze
     steps:
       - uses: actions/checkout@v7
