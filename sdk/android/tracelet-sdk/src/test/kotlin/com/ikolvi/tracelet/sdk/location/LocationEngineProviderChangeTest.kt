@@ -1,5 +1,6 @@
 package com.ikolvi.tracelet.sdk.location
 
+import android.Manifest
 import android.app.Application
 import android.content.Intent
 import android.location.LocationManager
@@ -12,13 +13,17 @@ import com.ikolvi.tracelet.sdk.wrapper.TraceletActivityRecognitionClient
 import com.ikolvi.tracelet.sdk.wrapper.TraceletEventExtractor
 import com.ikolvi.tracelet.sdk.wrapper.TraceletGeofencingClient
 import com.ikolvi.tracelet.sdk.wrapper.TraceletLocationClient
+import com.ikolvi.tracelet.sdk.wrapper.TraceletLocationCallback
 import com.ikolvi.tracelet.sdk.wrapper.TraceletServices
 import com.ikolvi.tracelet.sdk.wrapper.TraceletServicesProvider
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
@@ -31,16 +36,21 @@ class LocationEngineProviderChangeTest {
     private lateinit var context: Application
     private lateinit var engine: LocationEngine
     private val providerChanges = mutableListOf<Map<String, Any?>>()
+    private val locationClient = mock<TraceletLocationClient>()
+    private var trackingCallback: TraceletLocationCallback? = null
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         val locationManager = context.getSystemService(LocationManager::class.java)
         shadowOf(locationManager).setLocationEnabled(true)
+        doAnswer { invocation ->
+            trackingCallback = invocation.getArgument(1)
+            null
+        }.whenever(locationClient).requestLocationUpdates(any(), any(), any())
 
         TraceletServices.setProvider(object : TraceletServicesProvider {
-            override fun getLocationClient(context: android.content.Context) =
-                mock<TraceletLocationClient>()
+            override fun getLocationClient(context: android.content.Context) = locationClient
 
             override fun getGeofencingClient(context: android.content.Context) =
                 mock<TraceletGeofencingClient>()
@@ -101,6 +111,20 @@ class LocationEngineProviderChangeTest {
     }
 
     @Test
+    fun `provider broadcast and availability callback emit one change`() {
+        shadowOf(context).grantPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
+        engine.start()
+        val locationManager = context.getSystemService(LocationManager::class.java)
+        shadowOf(locationManager).setLocationEnabled(false)
+
+        context.sendBroadcast(Intent(LocationManager.MODE_CHANGED_ACTION))
+        shadowOf(android.os.Looper.getMainLooper()).idle()
+        trackingCallback!!.onLocationAvailability(false)
+
+        assertEquals(1, providerChanges.count { "gpsFallback" !in it })
+    }
+
+    @Test
     fun `destroy unregisters provider observer`() {
         engine.destroy()
         val locationManager = context.getSystemService(LocationManager::class.java)
@@ -110,5 +134,18 @@ class LocationEngineProviderChangeTest {
         shadowOf(android.os.Looper.getMainLooper()).idle()
 
         assertEquals(emptyList(), providerChanges)
+    }
+
+    @Test
+    fun `provider observer resumes after destroy`() {
+        engine.destroy()
+        engine.resumeProviderStateObservation()
+        val locationManager = context.getSystemService(LocationManager::class.java)
+        shadowOf(locationManager).setLocationEnabled(false)
+
+        context.sendBroadcast(Intent(LocationManager.MODE_CHANGED_ACTION))
+        shadowOf(android.os.Looper.getMainLooper()).idle()
+
+        assertEquals(1, providerChanges.size)
     }
 }

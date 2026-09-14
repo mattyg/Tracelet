@@ -824,7 +824,7 @@ class LocationEngine(
                 }
 
                 if (!isLocationAvailable) {
-                    events.sendProviderChange(providerState)
+                    publishProviderStateIfChanged(providerState)
                 }
             }
         }
@@ -1436,11 +1436,14 @@ class LocationEngine(
         providerStateReceiver = receiver
     }
 
-    private fun publishProviderStateIfChanged() {
-        val providerState = buildProviderState()
+    private fun publishProviderStateIfChanged(providerState: Map<String, Any?> = buildProviderState()) {
         if (providerState == lastProviderState) return
         lastProviderState = providerState
         events.sendProviderChange(providerState)
+    }
+
+    internal fun resumeProviderStateObservation() {
+        registerProviderStateReceiver()
     }
 
     private fun unregisterProviderStateReceiver() {
