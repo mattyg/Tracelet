@@ -859,11 +859,13 @@ class TraceletSdk private constructor(private val context: Context) {
         // Apply the interval-based sync cadence from the freshly-applied config (#149).
         startSyncIntervalTimer()
 
-        // Rebuild the native location processor with the config just applied by
-        // ready(). Without this the engine keeps the previous/default processor
-        // (e.g. distanceFilter=20) in memory and silently filters fixes the new
-        // config (e.g. distanceFilter=0) should have accepted (#157).
-        if (::locationEngine.isInitialized) locationEngine.rebuildProcessor()
+        // Restore resources released by reset(), then rebuild the native location
+        // processor with the config just applied by ready(). Without the rebuild,
+        // the engine keeps the previous/default processor configuration (#157).
+        if (::locationEngine.isInitialized) {
+            locationEngine.resumeProviderStateObservation()
+            locationEngine.rebuildProcessor()
+        }
 
         if (stateManager.enabled) {
             val motionMode = configManager.getMotionDetectionMode()
